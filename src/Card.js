@@ -4,7 +4,7 @@
 function Card({card}){
 
     return(
-        <img src={resp.data.cards.image} alt="card"/>
+        <img src={card} alt="card"/>
     )
 
 }
