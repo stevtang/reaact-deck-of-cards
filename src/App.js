@@ -2,49 +2,66 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import Card from "./Card";
 import axios from "axios";
-import { click } from "@testing-library/user-event/dist/click";
 const BASE_URL = "http://deckofcardsapi.com/api/";
 
+/** Fetches DeckID, draws and displays card on click
+ *
+ * Props: None
+ *
+ * State:
+ *  triggerDraw: true/false
+ *  decKId: string
+ *  currentCard: img url string
+ *
+ *  App -> Card
+ *
+ *
+ */
 function App() {
-  const [triggerDraw, setTriggerDraw] = useState(false)
+  const [triggerDraw, setTriggerDraw] = useState(false);
+  // REVIEW: deckId useState(null)
   const [deckId, setDeckId] = useState("");
   const [currentCard, setCurrentCard] = useState("");
 
-  useEffect(function fetchDeckId() {
-    console.log("Inside of fetchDeckId")
-    async function getDeckId() {
-      console.log("Inside of getDeckId async")
+  // fetch unique deckId
+  useEffect(function fetchDeckIdOnMount() {
+    console.log("Inside of fetchDeckId");
+    async function fetchDeckId() {
+      console.log("Inside of getDeckId async");
       const resp = await axios.get(`${BASE_URL}deck/new/shuffle/?deck_count=1`);
       setDeckId(resp.data.deck_id);
     }
-    getDeckId();
+    fetchDeckId();
   }, []);
-
-  useEffect(function fetchCardData() {
-    console.log("fetchCardData is rendering")
-    async function getCard() {
-      console.log("fetchCardData async is firing")
-      const resp = await axios.get(`${BASE_URL}deck/${deckId}/draw/?count=1`)
-      console.log(resp.data.cards[0].image)
-      setCurrentCard(resp.data.cards[0].image)
-    }
-    getCard()
-    setTriggerDraw(false)
-  },[triggerDraw]);
-
-  
-  function clickHandler(){
-    setTriggerDraw(true);
+  // fetch card data
+  useEffect(
+    function fetchCardData() {
+      console.log("fetchCardData is rendering");
+      async function getCard() {
+        console.log("fetchCardData async is firing");
+        const resp = await axios.get(`${BASE_URL}deck/${deckId}/draw/?count=1`);
+        const cardImage = resp.data.cards[0].image;
+        console.log(cardImage);
+        setCurrentCard(cardImage);
+      }
+      if(deckId){
+        getCard();
+      }
+      
+    },
+    [triggerDraw]
+  );
+  // flips triggerDraw to signal fetch card
+  function clickHandler() {
+    setTriggerDraw(currDraw => !currDraw);
   }
 
   return (
     <div className="App">
       <button onClick={clickHandler}>Get a Card</button>
-      <Card card={currentCard} />
+      {currentCard && <Card card={currentCard} />}
     </div>
   );
 }
 
 export default App;
-
-
