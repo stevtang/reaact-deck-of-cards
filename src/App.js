@@ -1,23 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from "react";
+import "./App.css";
+import Card from "/Card";
+import axios from "axios";
+const BASE_URL = "http://deckofcardsapi.com/api/";
 
 function App() {
+  const [deckId, setDeckId] = useState("");
+
+  useEffect(function fetchDeckId() {
+    async function getDeckId() {
+      const resp = axios.get(`${BASE_URL}deck/new/`);
+      setDeckId(resp.data.deck_id);
+    }
+  }, []);
+
+  useEffect(function fetchCardData() {
+    async function getCard() {
+      const resp = axios.get(`${BASE_URL}deck/${deckId}/draw/?count=1`)
+    }
+  });
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <button onClick={getCard}>Get a Card</button>
+      <Card card={resp.data.cards.image} />
     </div>
   );
 }
