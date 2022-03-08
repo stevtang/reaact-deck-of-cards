@@ -9,19 +9,26 @@ const BASE_URL = "http://deckofcardsapi.com/api/";
  * Props: None
  *
  * State:
+ *  CR: what is the purpose of the state? explain it here
  *  triggerDraw: true/false
  *  decKId: string
  *  currentCard: img url string
+ *  allowShuffle: true/false
+ *  triggerShuffle: true/false
  *
  *  App -> Card
  *
  *
  */
 function App() {
+
+
   const [triggerDraw, setTriggerDraw] = useState(false);
   // REVIEW: deckId useState(null)
   const [deckId, setDeckId] = useState("");
   const [currentCard, setCurrentCard] = useState("");
+  const [allowShuffle, setAllowShuffle] = useState(false);
+  const [triggerShuffle, setTriggerShuffle] = useState(false);
 
   // fetch unique deckId
   useEffect(function fetchDeckIdOnMount() {
@@ -33,6 +40,8 @@ function App() {
     }
     fetchDeckId();
   }, []);
+
+
   // fetch card data
   useEffect(
     function fetchCardData() {
@@ -44,22 +53,51 @@ function App() {
         console.log(cardImage);
         setCurrentCard(cardImage);
       }
-      if(deckId){
+      if (deckId) {
         getCard();
       }
-      
     },
+    // CR: Update this with a deckID variable
     [triggerDraw]
   );
+
+  useEffect(
+    function shuffleDeckOnClick() {
+      console.log("inside standard shuffle on click");
+      async function shuffleDeck() {
+        console.log("inside async shuffle on click");
+        await axios.get(`${BASE_URL}deck/${deckId}/shuffle/`);
+      }
+      if (allowShuffle) {
+        shuffleDeck();
+        setAllowShuffle(false);
+      }
+    },
+    [triggerShuffle]
+  )
+    //CR: better click handler name
   // flips triggerDraw to signal fetch card
   function clickHandler() {
     setTriggerDraw(currDraw => !currDraw);
+    setAllowShuffle(true);
   }
+
+  // Sets the state to trigger the effect to shuffle the deck.
+  function shuffleDeck() {
+    setCurrentCard(currCard => null);
+    setTriggerShuffle(currTrigger => !currTrigger)
+    setAllowShuffle(true);
+  }
+
+  // CR: if you had to invent a piece of state, consider implementing the behavior
+  // in your event listener instead
 
   return (
     <div className="App">
       <button onClick={clickHandler}>Get a Card</button>
       {currentCard && <Card card={currentCard} />}
+      {/* {allowShuffle && <button onClick={shuffleDeck}>Shuffle</button>} */}
+      <button disabled={!allowShuffle} onClick={shuffleDeck}>Shuffle</button>
     </div>
   );
 }
